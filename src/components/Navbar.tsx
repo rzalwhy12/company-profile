@@ -236,7 +236,7 @@ const Navbar = () => {
         { href: '/publication/information', label: 'Information' },
       ],
     },
-    { href: '/contact', label: 'Contact', icon: Calculator }, // Assuming you have a /contact page
+    { href: '/Contact', label: 'Contact', icon: Calculator }, // Assuming you have a /contact page
     { href: '/blog', label: 'Blog', icon: BookOpen },
   ];
 
