@@ -7,6 +7,7 @@ import Calculator from '@/components/Calculator';
 import Promote from '@/components/Promote';
 import Article from '@/components/Article';
 
+
 export default function Home() {
   return (
     <main>
@@ -16,7 +17,9 @@ export default function Home() {
       <About />
       <Promote />
       <Article />
+      <div id='Calculator'>
       <Calculator />
+      </div>
     </div>
     </main>
   );

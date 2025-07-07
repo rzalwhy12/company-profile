@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -133,13 +133,15 @@ const RecenterMap = ({ coords }: { coords: [number, number] }) => {
 };
 
 // Komponen untuk memaksa Leaflet hitung ulang ukuran
-const InvalidateMapSize = ({ deps = [] }: { deps?: any[] }) => {
+const InvalidateMapSize = ({ deps = [] }: { deps?: readonly unknown[] }) => { // Perubahan di sini: any[] menjadi readonly unknown[]
     const map = useMap();
     useEffect(() => {
+        // Penundaan kecil untuk memastikan peta sudah dirender sepenuhnya
+        // sebelum memaksa perhitungan ulang ukuran.
         setTimeout(() => {
             map.invalidateSize();
         }, 250);
-    }, deps);
+    }, deps); // Dependensi yang akan memicu efek ini
     return null;
 };
 
@@ -153,30 +155,31 @@ const BranchLocatorLeaflet = () => {
     const currentBranches = branches.slice(indexOfFirst, indexOfLast);
     const totalPages = Math.ceil(branches.length / branchesPerPage);
 
-    const defaultCenter: [number, number] = useMemo(() => [-7.260792, 112.748659], []);
+const [defaultCenter, setDefaultCenter] = useState<[number, number]>([-7.260792, 112.748659]);
+
+useEffect(() => {
+    setDefaultCenter([-7.260792, 112.748659]); 
+}, []);
 
     // Effect untuk memilih cabang pertama saat komponen dimuat atau daftar cabang berubah
     useEffect(() => {
         if (!selectedBranch && branches.length > 0) {
             setSelectedBranch(branches[0]);
         }
-    }, [selectedBranch, branches]); // Tambahkan `branches` ke dependency array
+    }, [selectedBranch, branches]); 
 
     return (
-        // Wrapper utama:
-
         <div className="bg-gradient-to-br from-blue-50 to-white w-full h-[50vh] flex flex-col lg:flex-row px-2 py-2 sm:px-4 sm:py-4 lg:px-8 lg:py-4 text-gray-800">
-            {/* Hapus max-w-7xl mx-auto di sini agar konten di dalamnya bisa full width di mobile/tablet */}
             <div className="flex-grow flex flex-col lg:flex-row gap-4 h-full">
                 <div className="flex flex-col flex-grow h-full lg:grid lg:grid-cols-3 lg:gap-4">
-                    <div className="block lg:hidden relative z-10 w-full h-[60px] mb-2"> {/* Tambah mb-2 untuk jarak ke peta */}
+                    {/* Select Cabang (Mobile Only) */}
+                    <div className="block lg:hidden relative w-full h-[60px] mb-2"> 
                         <select
                             value={selectedBranch?.id || ''}
                             onChange={(e) => {
                                 const branch = branches.find(b => b.id === e.target.value);
                                 if (branch) setSelectedBranch(branch);
                             }}
-                            // h-full di select agar mengisi tinggi div pembungkusnya
                             className="w-full h-full p-2 rounded-md shadow border bg-white/80 backdrop-blur-md text-sm"
                         >
                             <option value="">Pilih Cabang</option>
@@ -245,7 +248,8 @@ const BranchLocatorLeaflet = () => {
                     </div>
 
                     {/* Peta */}
-                    <div className="rounded-lg shadow-lg border border-blue-400 overflow-hidden w-full lg:col-span-2 h-[calc(100%-68px)]">
+                    {/* Menambahkan z-index pada div peta itu sendiri agar berada di "belakang" elemen lain jika ada tumpang tindih tak terduga */}
+                    <div className="rounded-lg shadow-lg border border-blue-400 overflow-hidden w-full lg:col-span-2 h-[calc(100%-68px)] relative z-0">
                         <MapContainer
                             center={selectedBranch ? [selectedBranch.coords.lat, selectedBranch.coords.lng] : defaultCenter}
                             zoom={selectedBranch ? 15 : 13}

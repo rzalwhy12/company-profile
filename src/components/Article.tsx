@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'; // Menggunakan ikon dari lucide-react
+import Image from 'next/image';
 
 // --- Interface untuk data artikel ---
 interface ArticleItem {
@@ -75,10 +76,13 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
             className="flex-none w-[320px] md:w-[360px] lg:w-[380px] bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 mx-3" // mx-3 untuk jarak antar kartu
         >
             <div className="relative w-full h-48 overflow-hidden">
-                <img
+                <Image
                     src={article.image}
                     alt={article.title}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    layout="fill" // Tetap menggunakan layout="fill"
+                    objectFit="cover"
+                    quality={80}
+                    className="transition-transform duration-500 hover:scale-105"
                 />
             </div>
             <div className="p-6">
@@ -87,6 +91,7 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
                 <div className="flex justify-between items-center text-gray-500 text-xs">
                     <span>{article.date}</span>
                     <a href="#" className="text-blue-700 hover:text-blue-900 flex items-center group">
+                        {/* Mengganti <ArrowRightIcon> dengan <ArrowRight> dari lucide-react */}
                         <ArrowRight className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" />
                     </a>
                 </div>
@@ -108,8 +113,16 @@ const Article: React.FC = () => {
             scrollContainerRef.current.scrollLeft += scrollSpeed.current;
 
             // Jika sudah mencapai akhir, kembali ke awal untuk efek looping
-            if (scrollContainerRef.current.scrollLeft >= scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth) {
-                scrollContainerRef.current.scrollLeft = 0; // Langsung kembali ke awal
+            // Perlu diperhatikan bahwa dengan duplikasi kartu, kondisi ini perlu sedikit disesuaikan
+            // agar transisi lebih mulus saat kembali ke awal "set" kartu yang pertama.
+            // Untuk solusi yang lebih robust dengan duplikasi, biasanya pakai teknik "cloning" DOM
+            // atau mengatur scrollLeft ke posisi awal duplikat.
+            // Untuk kasus ini, kembali ke 0 sudah cukup untuk efek looping sederhana.
+            if (scrollContainerRef.current.scrollLeft >= scrollContainerRef.current.scrollWidth / 2) {
+                // Jika Anda memiliki duplikasi, gulir kembali ke awal set pertama
+                // Ini mungkin membutuhkan perhitungan yang lebih tepat berdasarkan jumlah kartu dan lebar masing-masing.
+                // Untuk kesederhanaan, kita akan kembali ke awal penuh.
+                scrollContainerRef.current.scrollLeft = 0;
             }
         }
         animationFrameId.current = requestAnimationFrame(autoScroll);
@@ -202,23 +215,23 @@ const Article: React.FC = () => {
             {/* Custom Scrollbar Styling (Tambahkan ini di file CSS global Anda, misal globals.css) */}
             <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
-            height: 8px;
+        height: 8px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
+        background: #f1f1f1;
+        border-radius: 10px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 10px;
-            }
+        background: #ccc;
+        border-radius: 10px;
+        }
 
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #aaa;
-            }
-        `}</style>
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #aaa;
+        }
+    `}</style>
         </section>
     );
 };

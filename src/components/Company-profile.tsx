@@ -3,19 +3,21 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
-import { PlayCircle } from 'lucide-react';
 
 const CompanyProfilePage: React.FC = () => {
+    // Variants untuk seluruh section
     const sectionVariants: Variants = {
         hidden: { opacity: 0, y: 50 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
     };
 
+    // Variants untuk teks (visi & misi)
     const textVariants: Variants = {
         hidden: { opacity: 0, x: -50 },
         visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut" } }
     };
 
+    // Variants untuk gambar
     const imageVariants: Variants = {
         hidden: { opacity: 0, x: 50 },
         visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut" } }
@@ -26,11 +28,16 @@ const CompanyProfilePage: React.FC = () => {
         // Tambahkan flex dan flex-col agar konten di dalamnya bisa menyesuaikan
         <div className="bg-white text-gray-800 h-[50vh] flex flex-col font-sans overflow-x-hidden">
 
-            {/* Vision & Mission Section */}
-            {/* Hapus padding-top dan padding-bottom yang mungkin membuat konten terlalu tinggi */}
-            {/* Atau sesuaikan py-x di sini agar konten fit dalam 50vh */}
-            <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center flex-grow">
+            {/* Vision & Mission Section - Sekarang menggunakan motion.div dengan sectionVariants */}
+            <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }} // Memicu animasi saat 30% elemen terlihat
+                variants={sectionVariants} // Menerapkan sectionVariants di sini
+                className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center flex-grow"
+            >
                 <motion.div
+                    // `textVariants` sudah diterapkan pada div ini, jadi tidak perlu `sectionVariants` lagi di sini
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.3 }}
@@ -50,11 +57,12 @@ const CompanyProfilePage: React.FC = () => {
                     </ul>
                 </motion.div>
                 <motion.div
+                    // `imageVariants` sudah diterapkan pada div ini, jadi tidak perlu `sectionVariants` lagi di sini
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.3 }}
                     variants={imageVariants}
-                    className="relative w-full h-40 md:h-80 lg:h-full rounded-2xl overflow-hidden shadow-xl border border-gray-300" 
+                    className="relative w-full h-40 md:h-80 lg:h-full rounded-2xl overflow-hidden shadow-xl border border-gray-300"
                 >
                     <Image
                         src="/image/HUT-SDA-7.jpg"
@@ -65,7 +73,7 @@ const CompanyProfilePage: React.FC = () => {
                         className="transition-transform duration-500 hover:scale-105"
                     />
                 </motion.div>
-            </div>
+            </motion.div>
         </div>
     );
 };

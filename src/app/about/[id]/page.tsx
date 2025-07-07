@@ -89,7 +89,7 @@ const AboutUs: React.FC = () => {
             </div>
 
             {/* Breadcrumb */}
-            <div className="container mx-auto px-4 py-4 text-sm text-gray-600">
+            <div className="container mx-auto px-4 py-4 text-sm text-gray-600 ">
                 <Link href="/" className="hover:underline">HOME</Link>
                 <span className="mx-2">/</span>
                 <Link href="/about/mission-statement" className="hover:underline">About us</Link>
@@ -98,7 +98,7 @@ const AboutUs: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+            <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 ">
                 {/* Dropdown (Mobile) */}
                 <DropdownMenu
                     items={aboutUsContent.map(item => ({ id: item.id, label: item.label }))}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  Building2, Phone, Mail, MapPin,
+  Phone, Mail, MapPin,
   Facebook, Twitter, Instagram, Linkedin,
   ChevronDown, MessageCircle
 } from 'lucide-react';
@@ -30,7 +30,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gray-900 text-white relative z-0">
+    <footer className="bg-gray-900 text-white mt-[-73px] relative z-0">
       {/* Main Content - add padding bottom to prevent sticky footer overlap */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-[72px]">
         <div className="grid lg:grid-cols-5 gap-8">

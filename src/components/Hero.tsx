@@ -89,11 +89,8 @@ const Hero = () => {
     setIsModalOpen(false);
     if (modalVideoRef.current) {
       modalVideoRef.current.pause();
-      modalVideoRef.current.currentTime = 0; // Reset modal video to start for next open
+      modalVideoRef.current.currentTime = 0; 
     }
-    // No need to explicitly resume background video here.
-    // The useEffect above (the one listening to currentSlide, backgroundMedia, isModalOpen)
-    // will handle resuming the background video if it's the active slide and modal closes.
   }, []);
 
   // Effect to play modal video when it becomes visible

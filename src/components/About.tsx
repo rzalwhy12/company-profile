@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
@@ -9,16 +8,22 @@ export default function About() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768); // True jika lebar kurang dari tablet (md)
+      // Menentukan apakah lebar jendela kurang dari 768px (breakpoint 'md' di Tailwind CSS)
+      setIsMobile(window.innerWidth < 768);
     };
 
+    // Tambahkan event listener untuk mendengarkan perubahan ukuran jendela
     window.addEventListener('resize', handleResize);
-    handleResize(); // Panggil saat mount untuk inisialisasi awal
+    
+    // Panggil handleResize satu kali saat komponen di-mount
+    // untuk mengatur state 'isMobile' sesuai ukuran jendela saat inisialisasi
+    handleResize();
 
+    // Fungsi cleanup: Hapus event listener saat komponen di-unmount
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, []); // Array dependensi kosong memastikan useEffect ini hanya berjalan sekali saat mount dan unmount
 
   const fadeInVariants: Variants = {
     hidden: { opacity: 0, y: 20, transition: { duration: 0.0 } },
@@ -41,12 +46,15 @@ export default function About() {
                         md:min-h-[70vh]
                         lg:min-h-[80vh]
                         ">
-      {/* Background Image with Fixed Attachment */}
+      {/* Background Image with Fixed/Scroll Attachment */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0" // Removed transition-transform
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
         style={{
           backgroundImage: 'url("/image/bb.webp")',
-          backgroundAttachment: 'fixed', 
+          // Menggunakan 'isMobile' di sini:
+          // backgroundAttachment akan 'scroll' jika isMobile true (layar kecil),
+          // dan 'fixed' jika isMobile false (layar besar).
+          backgroundAttachment: isMobile ? 'scroll' : 'fixed', 
         }}
       >
         {/* Overlay for readability */}

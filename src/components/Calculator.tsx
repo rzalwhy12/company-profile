@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calculator as CalcIcon, PiggyBank, CreditCard } from 'lucide-react';
+import { Calculator as PiggyBank, CreditCard } from 'lucide-react';
 
 const Calculator = () => {
   const [activeTab, setActiveTab] = useState<'loan' | 'deposit'>('loan');

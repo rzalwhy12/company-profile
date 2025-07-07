@@ -26,14 +26,14 @@ interface SubSubSubLink {
 }
 
 interface SubSubLink {
-  href?: string;
+  href?: string; // href is optional for parent items that just expand
   label: string;
   subSubSubLinks?: SubSubSubLink[];
 }
 
 interface SubLink {
   label: string;
-  href?: string;
+  href?: string; // href is optional for parent items that just expand
   subSubLinks?: SubSubLink[];
 }
 
@@ -56,34 +56,48 @@ interface MobileMenuItemProps {
 const MobileMenuItem: React.FC<MobileMenuItemProps> = ({ item, level, onCloseNav, router, searchParams }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const hasSubItems = ('subLinks' in item && item.subLinks && item.subLinks.length > 0) ||
-                    ('subSubLinks' in item && item.subSubLinks && item.subSubLinks.length > 0) ||
-                    ('subSubSubLinks' in item && item.subSubSubLinks && item.subSubSubLinks.length > 0);
+  // Type guards to check if an item has specific sub-items
+  const hasSubLinks = (item: NavLink | SubLink | SubSubLink | SubSubSubLink): item is NavLink => 'subLinks' in item && !!item.subLinks && item.subLinks.length > 0;
+  const hasSubSubLinks = (item: NavLink | SubLink | SubSubLink | SubSubSubLink): item is SubLink => 'subSubLinks' in item && !!item.subSubLinks && item.subSubLinks.length > 0;
+  const hasSubSubSubLinks = (item: NavLink | SubLink | SubSubLink | SubSubSubLink): item is SubSubLink => 'subSubSubLinks' in item && !!item.subSubSubLinks && item.subSubSubLinks.length > 0;
 
-  const subItems = hasSubItems ? (item as any).subLinks || (item as any).subSubLinks || (item as any).subSubSubLinks : [];
+  const hasSubItems = hasSubLinks(item) || hasSubSubLinks(item) || hasSubSubSubLinks(item);
+
+  let subItems: (NavLink | SubLink | SubSubLink | SubSubSubLink)[] = [];
+  if (hasSubLinks(item)) {
+    subItems = item.subLinks || [];
+  } else if (hasSubSubLinks(item)) {
+    subItems = item.subSubLinks || [];
+  } else if (hasSubSubSubLinks(item)) {
+    subItems = item.subSubSubLinks || [];
+  }
 
   const handleToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default click behavior if there are sub-items or if href is '#'
     setIsExpanded(!isExpanded);
   };
 
   const linkHref = 'href' in item && item.href ? item.href : undefined;
 
   const handleLinkClick = (e: React.MouseEvent) => {
-    if (linkHref) {
-      // Logic for /saving-loan route with tab parameter
-      // Perhatikan perubahan di sini untuk mengarahkan ke /saving-loan
+    // This function is called ONLY if linkHref exists.
+    // Prevent default if linkHref is '#'
+    if (linkHref === '#') {
+      e.preventDefault(); // Prevent default navigation to '#'
+      // You can add other logic here if needed for '#' links,
+      // e.g., only expand the menu without navigating
+      setIsExpanded(!isExpanded); // Example: toggle menu if it's a '#' link
+    } else if (linkHref) { // Only if linkHref is not '#' and exists
       if (linkHref.startsWith('/saving-loan?tab=')) {
         const url = new URL(linkHref, window.location.origin);
         const tabParam = url.searchParams.get('tab');
         if (tabParam) {
-          router.push(`/saving-loan?tab=${tabParam}`, { scroll: false }); // <-- DIUBAH KEMBALI
+          router.push(`/saving-loan?tab=${tabParam}`, { scroll: false });
         }
       } else {
-        // For other links (like /about/mission-statement, /blog, etc.)
         router.push(linkHref, { scroll: false });
       }
-      onCloseNav(); // Close nav after click for mobile
+      onCloseNav(); // Close mobile nav after clicking a link
     }
   };
 
@@ -92,11 +106,14 @@ const MobileMenuItem: React.FC<MobileMenuItemProps> = ({ item, level, onCloseNav
       <div className={`flex items-center justify-between py-2 rounded-md font-medium text-white hover:text-gray-200 hover:bg-gray-800/10 transition-colors duration-200`}
            style={{ paddingLeft: `${16 + level * 10}px` }}>
         {linkHref ? (
+          // Link will always be rendered if linkHref exists,
+          // but handleLinkClick will prevent navigation if linkHref === '#'
           <Link href={linkHref} className="flex items-center space-x-2 flex-grow" onClick={handleLinkClick}>
             {'icon' in item && item.icon && <item.icon className="h-5 w-5" />}
             <span>{item.label}</span>
           </Link>
         ) : (
+          // If linkHref is undefined, render as a non-clickable div
           <div className="flex items-center space-x-2 flex-grow">
             {'icon' in item && item.icon && <item.icon className="h-5 w-5" />}
             <span>{item.label}</span>
@@ -104,6 +121,7 @@ const MobileMenuItem: React.FC<MobileMenuItemProps> = ({ item, level, onCloseNav
         )}
 
         {hasSubItems && (
+          // Toggle button for sub-items, always prevent default
           <button onClick={handleToggle} className="p-1 -mr-1">
             {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
           </button>
@@ -142,6 +160,7 @@ const Navbar = () => {
 
   const pathname = usePathname();
   const router = useRouter();
+  // useSearchParams() is used here, hence the need for Suspense in the parent
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -156,39 +175,39 @@ const Navbar = () => {
   const navLinks: NavLink[] = [
     { href: '/', label: 'Home', icon: Home },
     {
-      href: '/about/mission-statement', // Ini tetap jika /about/mission-statement tetap ada
+      href: '/about/mission-statement', // This stays if /about/mission-statement still exists
       label: 'About us',
       icon: Users,
       subLinks: [
-        { href: '/about/mission-statement', label: 'MISSION STATEMENT ,VALUES & COMPANY MOTTO' },
-        { href: '/about/customer-complaints', label: 'CUSTOMER COMPLAINTS' },
-        { href: '/about/office-locations', label: 'OFFICE BRANCH LOCATIONS' },
+        { href: '/about/mission-statement', label: 'Mission Statement, Values & Company Motto' },
+        { href: '/about/customer-complaints', label: 'Customer Complaints' },
+        { href: '/about/office-locations', label: 'Office Branch Locations' },
       ],
     },
     {
-      // Parent link for Services, sekarang mengarah ke jalur /saving-loan
-      href: '/saving-loan?tab=saving-product', // <-- DIUBAH KEMBALI
+      // Parent link for Services, now points to /saving-loan path
+      href: '/saving-loan?tab=saving-product',
       label: 'Services',
       icon: CreditCard,
       subLinks: [
         {
-          href: '/saving-loan?tab=saving-product', // <-- DIUBAH KEMBALI
-          label: 'SAVINGS',
+          href: '/saving-loan?tab=saving-product',
+          label: 'Savings',
           subSubLinks: [
-            { href: '/saving-loan?tab=saving-product', label: 'Regular Savings' }, // <-- DIUBAH KEMBALI
-            { href: '/saving-loan?tab=saving-product', label: 'Term Savings' },     // <-- DIUBAH KEMBALI
-            { href: '/saving-loan?tab=saving-product', label: 'Time deposit' },    // <-- DIUBAH KEMBALI
+            { href: '/saving-loan?tab=saving-product', label: 'Regular Savings' },
+            { href: '/saving-loan?tab=saving-product', label: 'Term Savings' },
+            { href: '/saving-loan?tab=saving-product', label: 'Time deposit' },
           ],
         },
         {
-          href: '/saving-loan?tab=financing-product', // <-- DIUBAH KEMBALI
-          label: 'LOANS',
+          href: '/saving-loan?tab=financing-product',
+          label: 'Loans',
           subSubLinks: [
-            { href: '/saving-loan?tab=financing-product', label: 'Working Capital Credit' }, // <-- DIUBAH KEMBALI
-            { href: '/saving-loan?tab=financing-product', label: 'Consumer Credit' },       // <-- DIUBAH KEMBALI
-            { href: '/saving-loan?tab=financing-product', label: 'Investment credit' },    // <-- DIUBAH KEMBALI
-            // Jika Loan Application Form sekarang di /saving-loan/loans/, sesuaikan ini:
-            { href: '/saving-loan/loans/loan-application-form', label: 'Loan Application Form' }, // <-- DIUBAH JIKA PERLU
+            { href: '/saving-loan?tab=financing-product', label: 'Working Capital Credit' },
+            { href: '/saving-loan?tab=financing-product', label: 'Consumer Credit' },
+            { href: '/saving-loan?tab=financing-product', label: 'Investment credit' },
+            // If Loan Application Form is now at /saving-loan/loans/, adjust this:
+            { href: '/saving-loan/loans/loan-application-form', label: 'Loan Application Form' },
           ],
         },
       ],
@@ -203,6 +222,8 @@ const Navbar = () => {
           label: 'Report',
           subSubLinks: [
             {
+              // If this is just a label without navigation, ensure href is absent or set to '#'
+              href: '#', // Set to '#' as this is a parent for subSubSubLinks
               label: 'Financial Report',
               subSubSubLinks: [
                 { href: '/publication/report/financial/neraca', label: 'Neraca' }
@@ -274,13 +295,15 @@ const Navbar = () => {
       return pathname === '/' && !searchParams.get('tab');
     }
     // For the /saving-loan page with a specific tab
-    if (href.startsWith('/saving-loan?tab=')) { // <-- DIUBAH KEMBALI
+    if (href.startsWith('/saving-loan?tab=')) {
       const url = new URL(href, window.location.origin);
       const targetTab = url.searchParams.get('tab');
-      return pathname === '/saving-loan' && searchParams.get('tab') === targetTab; // <-- DIUBAH KEMBALI
+      // Check if pathname matches AND the 'tab' query parameter matches
+      return pathname === '/saving-loan' && searchParams.get('tab') === targetTab;
     }
     // For other normal pages like /about, /blog, /contact etc.
-    return pathname === href;
+    // Also handles paths that start with the href (e.g., /publication/report/financial/neraca matches /publication/report)
+    return pathname === href || pathname.startsWith(href + '/');
   };
 
   return (
@@ -298,8 +321,8 @@ const Navbar = () => {
                 <Image
                   src="/image/Logo-HD-new-19cm.png"
                   alt="Logo SDA"
-                  width={100}
-                  height={20}
+                  width={100} // Set a base width
+                  height={20} // Set a base height, will be scaled by CSS classes
                   className="w-[120px] h-[30px] md:w-[150px] md:h-[40px] lg:w-[150px] lg:h-[40px]"
                 />
               </div>
@@ -340,10 +363,18 @@ const Navbar = () => {
                         onMouseEnter={() => subLink.subSubLinks && handleSubMouseEnter(subLink.label)}
                         onMouseLeave={() => subLink.subSubLinks && handleSubMouseLeave()}
                       >
+                        {/* Ensure href always exists for the Link component, default to '#' if not provided */}
                         <Link
                           href={subLink.href || '#'}
                           className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600
                                       ${isActiveLink(subLink.href || '') ? 'font-semibold text-blue-600 bg-gray-50' : ''}`}
+                          // Add onClick to prevent default if href is '#' on desktop
+                          onClick={(e) => {
+                            if (subLink.href === '#') {
+                              e.preventDefault();
+                              // You could add logic here for toggling menu on click of a '#' parent link on desktop
+                            }
+                          }}
                         >
                           {subLink.label}
                           {subLink.subSubLinks && <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />}
@@ -364,10 +395,16 @@ const Navbar = () => {
                                 onMouseEnter={() => subSubLink.subSubSubLinks && handleSubSubMouseEnter(subSubLink.label)}
                                 onMouseLeave={() => subSubLink.subSubSubLinks && handleSubSubMouseLeave()}
                               >
+                                {/* Ensure href always exists for the Link component, default to '#' if not provided */}
                                 <Link
                                   href={subSubLink.href || '#'}
                                   className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600
                                               ${isActiveLink(subSubLink.href || '') ? 'font-semibold text-blue-600 bg-gray-50' : ''}`}
+                                  onClick={(e) => {
+                                    if (subSubLink.href === '#') {
+                                      e.preventDefault();
+                                    }
+                                  }}
                                 >
                                   {subSubLink.label}
                                   {subSubLink.subSubSubLinks && <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />}

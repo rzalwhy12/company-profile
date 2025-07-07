@@ -1,20 +1,12 @@
-// src/app/saving-loan/page.tsx
-// Hapus 'use client' di sini (ini akan menjadikannya Server Component lagi secara default)
-// Anda bisa menghapus import useSearchParams juga karena tidak lagi digunakan di sini
-import { Suspense } from 'react';
-import SavingLoanContent from '@/components/SavingLoanContent';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-// import { useSearchParams } from 'next/navigation'; // <-- BISA DIHAPUS
 
 export default function SavingLoanPage() {
-    // Anda bisa menghapus baris ini juga karena SavingLoanContent yang akan membaca URL
-    // const searchParams = useSearchParams();
-    // const initialTabFromUrl = searchParams.get('tab') || 'saving-product';
 
     return (
         <div className="min-h-screen bg-white text-gray-800">
-            {/* Hero Section - Ini bisa tetap di page.tsx jika tidak ada client-side hook */}
+            {/* Hero Section */}
             <section className="relative text-white py-20 sm:py-24 md:py-32 lg:py-40 overflow-hidden" style={{
                 backgroundImage: "url('/image/bg-1.png')",
                 backgroundPosition: "center",
@@ -37,15 +29,8 @@ export default function SavingLoanPage() {
                 </div>
             </section>
 
-            {/* Main Content - Ini sekarang adalah komponen yang dibungkus Suspense */}
-            <Suspense fallback={
-                <div className="flex justify-center items-center py-20">
-                    <p>Loading loan and saving products...</p>
-                </div>
-            }>
-                {/* TIDAK PERLU initialTab lagi karena SavingLoanContent membaca URL-nya sendiri */}
-                <SavingLoanContent /> {/* <--- HAPUS initialTab={initialTabFromUrl} */}
-            </Suspense>
+            {/* Main Content */}
+
             <section
                 className="relative py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-6 text-white overflow-hidden"
                 style={{

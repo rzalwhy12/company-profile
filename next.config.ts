@@ -1,7 +1,9 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+// next.config.ts
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  // Hapus 'swcMinify: true,' (jika ada)
+  // Hapus seluruh bagian 'experimental: { esmExternals: 'loose' },' (jika ada)
 };
 
-export default nextConfig;
+module.exports = nextConfig;
