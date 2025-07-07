@@ -218,25 +218,22 @@ const Navbar = () => {
       icon: ClipboardList,
       subLinks: [
         {
-          href: '/publication/report', // Example: Report page
+          href: '/publication?section=report', // Example: Report page
           label: 'Report',
           subSubLinks: [
             {
               // If this is just a label without navigation, ensure href is absent or set to '#'
-              href: '#', // Set to '#' as this is a parent for subSubSubLinks
+              href: '/publication?section=financial-report', // Set to '#' as this is a parent for subSubSubLinks
               label: 'Financial Report',
-              subSubSubLinks: [
-                { href: '/publication/report/financial/neraca', label: 'Neraca' }
-              ]
             },
-            { href: '/publication/report/annual', label: 'Annual Report' },
+            { href: '/publication?section=annual-report', label: 'Annual Report' },
           ],
         },
-        { href: '/publication/idic-lps', label: 'IDIC / LPS' },
-        { href: '/publication/information', label: 'Information' },
+        { href: '/publication?section=idic-lps', label: 'IDIC / LPS' },
+        { href: '/publication?section=information', label: 'Information' },
       ],
     },
-    { href: '/Contact', label: 'Contact', icon: Calculator }, // Assuming you have a /contact page
+    { href: '/Contact', label: 'Contact', icon: Calculator }, 
     { href: '/blog', label: 'Blog', icon: BookOpen },
   ];
 
@@ -363,16 +360,16 @@ const Navbar = () => {
                         onMouseEnter={() => subLink.subSubLinks && handleSubMouseEnter(subLink.label)}
                         onMouseLeave={() => subLink.subSubLinks && handleSubMouseLeave()}
                       >
-                        {/* Ensure href always exists for the Link component, default to '#' if not provided */}
+                        
                         <Link
                           href={subLink.href || '#'}
                           className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600
                                       ${isActiveLink(subLink.href || '') ? 'font-semibold text-blue-600 bg-gray-50' : ''}`}
-                          // Add onClick to prevent default if href is '#' on desktop
+
                           onClick={(e) => {
                             if (subLink.href === '#') {
                               e.preventDefault();
-                              // You could add logic here for toggling menu on click of a '#' parent link on desktop
+                              
                             }
                           }}
                         >

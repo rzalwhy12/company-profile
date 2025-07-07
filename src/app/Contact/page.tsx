@@ -82,11 +82,6 @@ export default function ContactSection() {
 
     return (
         <div className="min-h-screen bg-white text-gray-800 relative overflow-hidden">
-            {/* START - Background layers.
-                Added z-20 on mobile (hidden by default, appears on md:block)
-                to put them above content only on mobile, if content's z-index is removed.
-                This is for the specific request to put content "below".
-            */}
             <div className="relative w-full overflow-hidden pt-[calc(100%*2/50)] hidden md:block">
                 <Image
                     src="/image/12.jpg"
