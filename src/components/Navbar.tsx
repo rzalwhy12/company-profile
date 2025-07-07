@@ -213,7 +213,7 @@ const Navbar = () => {
       ],
     },
     {
-      href: '/publication', // Example: main publication page
+      href: '/publication?section=report', // Example: main publication page
       label: 'Publication',
       icon: ClipboardList,
       subLinks: [

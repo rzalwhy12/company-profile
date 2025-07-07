@@ -115,7 +115,7 @@ const CustomerEnquiryForm: React.FC = () => {
             {/* Left Section: Form */}
             <div className="w-full lg:w-1/2 p-6 sm:p-10 flex items-center justify-center">
                 {/* Menambahkan min-h-[min(content,80vh)] untuk memastikan ada cukup ruang */}
-                <div className="max-w-md w-full bg-white rounded-lg shadow-xl border border-gray-100 p-8 sm:p-10 relative min-h-[min(content,80vh)]">
+                <div className="max-w-md w-full bg-white rounded-lg shadow-xl border border-gray-100 p-8 sm:p-10 relative min-h-[min(content,80vh)] mt-8">
                     {/* Back to Home Button */}
                     <div className="absolute top-4 left-4">
                         <Button
