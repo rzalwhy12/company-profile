@@ -111,7 +111,7 @@ const CustomerEnquiryForm: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
+        <div className="flex flex-col lg:flex-row min-h-screen bg-blue-950">
             {/* Left Section: Form */}
             <div className="w-full lg:w-1/2 p-6 sm:p-10 flex items-center justify-center">
                 {/* Menambahkan min-h-[min(content,80vh)] untuk memastikan ada cukup ruang */}
