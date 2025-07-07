@@ -122,7 +122,7 @@ const Footer = () => {
       </div>
 
       {/* Sticky Footer (Mobile Shortcut) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0B1F3A] text-white flex justify-between md:hidden z-5000 shadow-inner border-t border-white/10">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0B1F3A] text-white flex justify-between md:hidden z-50 shadow-inner border-t border-white/10">
   <a
     href="tel:082142991064"
     className="flex-1 flex flex-col items-center justify-center py-2 text-xs hover:bg-blue-700/20 transition border-r border-white/10"

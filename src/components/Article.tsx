@@ -1,88 +1,52 @@
-'use client'; // Pastikan ini ada di baris paling atas
+// src/components/Article.tsx
+'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, Variants } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'; // Menggunakan ikon dari lucide-react
-import Image from 'next/image';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+// Pastikan path ke lib/api Anda benar
+import { fetchArticles, Article as BackendlessArticle } from '@/lib/api'; 
+import Link from 'next/link';
 
-// --- Interface untuk data artikel ---
-interface ArticleItem {
-    id: number;
-    image: string;
+interface DisplayArticleItem {
+    id: string; // Ini adalah objectId dari Backendless
+    image: string; // <-- Ubah ini menjadi string SAJA, karena kita akan menyediakan fallback
     title: string;
-    description: string; // Deskripsi singkat atau tag yang muncul di bawah judul
+    description: string;
     date: string;
+    slug: string;
 }
 
-// --- Data Dummy Artikel ---
-const articles: ArticleItem[] = [
-    {
-        id: 1,
-        image: '/image/articles/1.jpg', // Ganti dengan path gambar Anda
-        title: 'BPR SDA Percepat Digitalisasi Kredit dengan AI EStates',
-        description: 'BPR SDA berkolaborasi dengan AI EStates untuk percepatan proses kredit.',
-        date: '05 Jul 2024',
-    },
-    {
-        id: 2,
-        image: '/image/articles/3.jpeg', // Ganti dengan path gambar Anda
-        title: 'Informasi Perubahan Nomor Virtual Account (VA) BCA Top Up Saldo',
-        description: 'Berlaku efektif mulai tanggal 25 Juni 2024, ada perubahan nomor VA BCA untuk Top Up Saldo.',
-        date: '28 Jun 2024',
-    },
-    {
-        id: 3,
-        image: '/image/articles/2.jpg', // Ganti dengan path gambar Anda
-        title: 'Frugal Living, Bagaimana Cara Mencapainya?',
-        description: 'Pelajari tips dan trik untuk menerapkan gaya hidup hemat dan cerdas finansial.',
-        date: '31 May 2024',
-    },
-    {
-        id: 4,
-        image: '/image/articles/4.jpeg', // Contoh gambar tambahan
-        title: 'Inovasi Layanan Terbaru untuk Kemudahan Transaksi Anda',
-        description: 'Kami menghadirkan fitur-fitur baru di aplikasi mobile banking kami.',
-        date: '20 May 2024',
-    },
-    {
-        id: 5,
-        image: '/image/articles/5.jpg', // Contoh gambar tambahan
-        title: 'Tips Aman Bertransaksi Online dengan Universal BPR',
-        description: 'Jaga keamanan data Anda dengan panduan bertransaksi online yang aman.',
-        date: '15 May 2024',
-    },
-    {
-        id: 6,
-        image: '/image/articles/6.jpg', // Contoh gambar tambahan
-        title: 'Investasi Cerdas: Pilihan Tepat untuk Masa Depan Anda',
-        description: 'Mulai investasi dengan produk unggulan dari BPR SDA.',
-        date: '10 May 2024',
-    },
-];
-
 // --- Komponen Card Artikel ---
-const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
+const ArticleCard: React.FC<{ article: DisplayArticleItem }> = ({ article }) => {
     const cardVariants: Variants = {
         hidden: { opacity: 0, y: 50, scale: 0.9 },
         visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: 'easeOut' } },
     };
+
+    // Default image jika article.image kosong atau tidak valid
+    const defaultImage = 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=400';
 
     return (
         <motion.div
             variants={cardVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }} // Animasi sekali saat masuk viewport
-            className="flex-none w-[320px] md:w-[360px] lg:w-[380px] bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 mx-3" // mx-3 untuk jarak antar kartu
+            viewport={{ once: true, amount: 0.3 }}
+            className="flex-none w-[320px] md:w-[360px] lg:w-[380px] bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 mx-3"
         >
             <div className="relative w-full h-48 overflow-hidden">
-                <Image
-                    src={article.image}
+                <img
+                    src={article.image || defaultImage} // Gunakan defaultImage jika article.image kosong
                     alt={article.title}
-                    layout="fill" // Tetap menggunakan layout="fill"
-                    objectFit="cover"
-                    quality={80}
-                    className="transition-transform duration-500 hover:scale-105"
+                    className="object-cover w-full h-full transition-transform duration-500 hover:scale-105"
+                    onError={(e) => {
+                        const target = e.currentTarget;
+                        if (target.src !== defaultImage) { // Hanya ganti jika belum fallback
+                            target.src = defaultImage;
+                            target.alt = 'Image not available';
+                        }
+                    }}
                 />
             </div>
             <div className="p-6">
@@ -90,10 +54,10 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">{article.description}</p>
                 <div className="flex justify-between items-center text-gray-500 text-xs">
                     <span>{article.date}</span>
-                    <a href="#" className="text-blue-700 hover:text-blue-900 flex items-center group">
-                        {/* Mengganti <ArrowRightIcon> dengan <ArrowRight> dari lucide-react */}
+                    <Link href={`/blog/${article.slug}`} className="text-blue-700 hover:text-blue-900 flex items-center group">
+                        Read More
                         <ArrowRight className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" />
-                    </a>
+                    </Link>
                 </div>
             </div>
         </motion.div>
@@ -103,48 +67,83 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
 // --- Komponen Utama Artikel ---
 const Article: React.FC = () => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const scrollSpeed = useRef(1); // Kecepatan scroll, bisa diatur
+    const scrollSpeed = useRef(0);
     const animationFrameId = useRef<number | null>(null);
-    const [isHovered, setIsHovered] = useState(false); // Untuk menghentikan auto-scroll saat hover
+    const [isHovered, setIsHovered] = useState(false);
+    const [articles, setArticles] = useState<DisplayArticleItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Fungsi untuk melakukan auto-scroll
+    // Fetch data from API
+    useEffect(() => {
+        const getArticles = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const fetchedArticles: BackendlessArticle[] = await fetchArticles();
+                const mappedArticles: DisplayArticleItem[] = fetchedArticles
+                    .filter(article => article.publish) // Filter hanya artikel yang dipublikasikan
+                    .map(article => ({
+                        id: article.objectId, // objectId harus string, dan diasumsikan selalu ada dari Backendless
+                        image: article.thumbnail || 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=400', // <-- SOLUSI: Pastikan selalu string
+                        title: article.title,
+                        description: article.content, // Konten mungkin perlu dipendekkan atau dibersihkan
+                        slug: article.slug, // Pastikan slug ada di BackendlessArticle
+                        date: article.created
+                            ? new Date(article.created).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                            : 'Unknown Date',
+                    }));
+                setArticles(mappedArticles);
+            } catch (err) {
+                console.error("Failed to fetch articles:", err);
+                setError("Failed to load articles. Please try again later.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getArticles();
+    }, []);
+
+    // Auto-scroll logic (akan menggulir hingga akhir dan berhenti)
     const autoScroll = useCallback(() => {
-        if (scrollContainerRef.current && !isHovered) {
-            scrollContainerRef.current.scrollLeft += scrollSpeed.current;
+        if (scrollContainerRef.current && !isHovered && scrollSpeed.current > 0) {
+            const currentScroll = scrollContainerRef.current.scrollLeft;
+            const maxScroll = scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth;
 
-            // Jika sudah mencapai akhir, kembali ke awal untuk efek looping
-            // Perlu diperhatikan bahwa dengan duplikasi kartu, kondisi ini perlu sedikit disesuaikan
-            // agar transisi lebih mulus saat kembali ke awal "set" kartu yang pertama.
-            // Untuk solusi yang lebih robust dengan duplikasi, biasanya pakai teknik "cloning" DOM
-            // atau mengatur scrollLeft ke posisi awal duplikat.
-            // Untuk kasus ini, kembali ke 0 sudah cukup untuk efek looping sederhana.
-            if (scrollContainerRef.current.scrollLeft >= scrollContainerRef.current.scrollWidth / 2) {
-                // Jika Anda memiliki duplikasi, gulir kembali ke awal set pertama
-                // Ini mungkin membutuhkan perhitungan yang lebih tepat berdasarkan jumlah kartu dan lebar masing-masing.
-                // Untuk kesederhanaan, kita akan kembali ke awal penuh.
-                scrollContainerRef.current.scrollLeft = 0;
+            if (currentScroll < maxScroll) {
+                scrollContainerRef.current.scrollLeft += scrollSpeed.current;
+                animationFrameId.current = requestAnimationFrame(autoScroll);
+            } else {
+                if (animationFrameId.current) {
+                    cancelAnimationFrame(animationFrameId.current);
+                    animationFrameId.current = null;
+                }
             }
         }
-        animationFrameId.current = requestAnimationFrame(autoScroll);
     }, [isHovered]);
 
     useEffect(() => {
-        // Memulai auto-scroll
-        animationFrameId.current = requestAnimationFrame(autoScroll);
-
-        // Cleanup saat komponen dilepas
-        return () => {
+        if (articles.length > 0 && scrollSpeed.current > 0) {
             if (animationFrameId.current) {
                 cancelAnimationFrame(animationFrameId.current);
             }
+            animationFrameId.current = requestAnimationFrame(autoScroll);
+        }
+
+        return () => {
+            if (animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+                animationFrameId.current = null;
+            }
         };
-    }, [autoScroll]);
+    }, [autoScroll, articles.length]);
 
     // Fungsi untuk navigasi manual
     const scrollLeft = () => {
         if (scrollContainerRef.current) {
             scrollContainerRef.current.scrollBy({
-                left: -400, // Scroll 400px ke kiri
+                left: -400,
                 behavior: 'smooth',
             });
         }
@@ -153,7 +152,7 @@ const Article: React.FC = () => {
     const scrollRight = () => {
         if (scrollContainerRef.current) {
             scrollContainerRef.current.scrollBy({
-                left: 400, // Scroll 400px ke kanan
+                left: 400,
                 behavior: 'smooth',
             });
         }
@@ -166,72 +165,54 @@ const Article: React.FC = () => {
                     The latest information from us
                 </h2>
 
-                {/* Carousel Container */}
-                <div className="relative">
-                    <div
-                        ref={scrollContainerRef}
-                        onMouseEnter={() => setIsHovered(true)} // Hentikan auto-scroll saat mouse masuk
-                        onMouseLeave={() => setIsHovered(false)} // Lanjutkan auto-scroll saat mouse keluar
-                        className="flex overflow-x-auto pb-6 custom-scrollbar" // custom-scrollbar untuk styling scrollbar
-                        style={{ scrollBehavior: 'auto' }} // Tetapkan ke 'auto' agar scroll manual dan auto-scroll tidak bertabrakan dengan 'smooth'
-                    >
-                        {articles.map((article) => (
-                            <ArticleCard key={article.id} article={article} />
-                        ))}
-                        {/* Duplicate cards for a seamless loop effect (optional, but good for carousels) */}
-                        {articles.map((article) => (
-                            <ArticleCard key={`loop-${article.id}`} article={article} />
-                        ))}
-                    </div>
+                {loading ? (
+                    <div className="text-center py-10 text-gray-600">Loading articles...</div>
+                ) : error ? (
+                    <div className="text-center py-10 text-red-600">{error}</div>
+                ) : articles.length === 0 ? (
+                    <div className="text-center py-10 text-gray-600">No articles found.</div>
+                ) : (
+                    <div className="relative">
+                        <div
+                            ref={scrollContainerRef}
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
+                            className="flex overflow-x-auto pb-6 custom-scrollbar"
+                            style={{ scrollBehavior: 'auto' }}
+                        >
+                            {articles.map((article) => (
+                                <ArticleCard key={article.id} article={article} />
+                            ))}
+                        </div>
 
-                    {/* Navigation Arrows (Optional, bisa disembunyikan jika hanya auto-scroll) */}
-                    <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-4 z-10">
-                        <button
-                            onClick={scrollLeft}
-                            className="bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors hidden md:block"
-                            aria-label="Scroll left"
-                        >
-                            <ChevronLeft className="w-6 h-6 text-gray-700" />
-                        </button>
-                        <button
-                            onClick={scrollRight}
-                            className="bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors hidden md:block"
-                            aria-label="Scroll right"
-                        >
-                            <ChevronRight className="w-6 h-6 text-gray-700" />
-                        </button>
+                        {/* Navigation Arrows */}
+                        <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-4 z-10">
+                            <button
+                                onClick={scrollLeft}
+                                className="bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors hidden md:block"
+                                aria-label="Scroll left"
+                            >
+                                <ChevronLeft className="w-6 h-6 text-gray-700" />
+                            </button>
+                            <button
+                                onClick={scrollRight}
+                                className="bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors hidden md:block"
+                                aria-label="Scroll right"
+                            >
+                                <ChevronRight className="w-6 h-6 text-gray-700" />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Lihat Selengkapnya Link */}
                 <div className="text-center mt-12">
-                    <a href="#" className="inline-flex items-center text-orange-400 font-semibold text-lg hover:text-orange-600 transition-colors">
+                    <Link href="/blog" className="inline-flex items-center text-orange-400 font-semibold text-lg hover:text-orange-600 transition-colors">
                         see more
                         <ArrowRight className="ml-2 w-5 h-5" />
-                    </a>
+                    </Link>
                 </div>
             </div>
-
-            {/* Custom Scrollbar Styling (Tambahkan ini di file CSS global Anda, misal globals.css) */}
-            <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-        height: 8px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #aaa;
-        }
-    `}</style>
         </section>
     );
 };

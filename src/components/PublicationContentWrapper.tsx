@@ -1,13 +1,13 @@
 // src/components/PublicationContentWrapper.tsx
 'use client';
 
-// --- PASTIKAN SEMUA INI ADA DAN LENGKAP ---
-import React, { useState, useEffect, useRef } from 'react'; // <--- PASTIKAN ADA useState, useEffect, useRef
-import { useSearchParams, useRouter } from 'next/navigation'; // <--- PASTIKAN ADA useSearchParams, useRouter
-import { Button } from '@/components/ui/button'; // <--- PASTIKAN ADA Button
-import { CSSTransition, TransitionGroup } from 'react-transition-group'; // <--- PASTIKAN ADA CSSTransition, TransitionGroup
 
-// Import komponen PublicationDocumentCard
+import React, { useState, useEffect, useRef } from 'react'; 
+import { useSearchParams, useRouter } from 'next/navigation'; 
+import { Button } from '@/components/ui/button'; 
+import { CSSTransition, TransitionGroup } from 'react-transition-group'; 
+
+
 import PublicationDocumentCard from './PublicationDocumentCard';
 
 // Import tipe dan fungsi dari file utilitas
@@ -18,7 +18,7 @@ import {
     BreadcrumbItem,
 } from '@/types/publication'; // Sesuaikan path jika berbeda
 
-// Content for each publication section (biarkan tetap di sini)
+
 const publicationContent: Record<PublicationSection, PublicationContentItem> = {
     // ... data publicationContent Anda ...
     'financial-report': {
@@ -79,7 +79,7 @@ const publicationContent: Record<PublicationSection, PublicationContentItem> = {
             </div>
         ),
     },
-    'report': { // Default content for 'Report' if no sub-item is selected
+    'report': { 
         title: 'Reports Overview',
         content: (
             <div className="space-y-4">
@@ -108,7 +108,7 @@ const PublicationContent: React.FC = () => {
             }
         } else {
             if (typeof window !== 'undefined' && !searchParams.get('section')) {
-                 router.replace('/publication?section=financial-report');
+                    router.replace('/publication?section=financial-report');
             }
         }
     }, [searchParams, router]);
@@ -271,4 +271,4 @@ const PublicationContent: React.FC = () => {
     );
 };
 
-export default PublicationContent; // Ekspor komponen React Anda
+export default PublicationContent; 

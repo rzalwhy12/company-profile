@@ -1,10 +1,9 @@
-// src/components/PublicationDocumentCard.tsx
-'use client'; // Pastikan ini Client Component karena menggunakan useRef dan CSSTransition
+
+'use client'; 
 
 import React, { useRef } from 'react';
-import { CSSTransition } from 'react-transition-group';
 
-// Salin definisi DocumentType dan getFileIcon ke sini atau impor jika sudah ada di file terpisah
+
 type DocumentType = 'pdf' | 'excel' | 'word';
 
 interface Document {
@@ -15,7 +14,6 @@ interface Document {
 }
 
 const getFileIcon = (type: DocumentType) => {
-    // ... (salin fungsi getFileIcon dari PublicationContentWrapper.tsx ke sini)
     switch (type) {
         case 'pdf':
             return (
@@ -48,17 +46,10 @@ const getFileIcon = (type: DocumentType) => {
 };
 
 
-const PublicationDocumentCard: React.FC<{ doc: Document; delay: number }> = ({ doc, delay }) => {
+const PublicationDocumentCard: React.FC<{ doc: Document; delay: number }> = ({ doc }) => {
     const nodeRef = useRef(null);
 
     return (
-        <CSSTransition
-            in={true} // Selalu true karena ini untuk item yang muncul saat list di-render
-            appear={true} // Untuk memicu animasi saat mount pertama kali
-            timeout={300 + delay} // Gunakan delay yang diberikan dari parent
-            classNames="stagger-item"
-            nodeRef={nodeRef}
-        >
             <div ref={nodeRef}>
                 <a
                     href={doc.link}
@@ -90,7 +81,6 @@ const PublicationDocumentCard: React.FC<{ doc: Document; delay: number }> = ({ d
                     </svg>
                 </a>
             </div>
-        </CSSTransition>
     );
 };
 
