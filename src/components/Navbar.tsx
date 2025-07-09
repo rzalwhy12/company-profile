@@ -13,11 +13,14 @@ import {
   CreditCard,
   Calculator,
   BookOpen,
-  User,
   LogIn,
   ClipboardList
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useAppSelector, useAppDispatch } from '@/lib//redux/hooks';
+import { setSignIn, setSignOut } from '@/lib/redux/features/userSlice';
+import { apiCall } from '@/helper/apiCall';
+import { toast } from 'react-toastify';
 
 // Define types for your navigation links to improve type safety
 interface SubSubSubLink {
@@ -73,21 +76,17 @@ const MobileMenuItem: React.FC<MobileMenuItemProps> = ({ item, level, onCloseNav
   }
 
   const handleToggle = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default click behavior if there are sub-items or if href is '#'
+    e.preventDefault();
     setIsExpanded(!isExpanded);
   };
 
   const linkHref = 'href' in item && item.href ? item.href : undefined;
 
   const handleLinkClick = (e: React.MouseEvent) => {
-    // This function is called ONLY if linkHref exists.
-    // Prevent default if linkHref is '#'
     if (linkHref === '#') {
-      e.preventDefault(); // Prevent default navigation to '#'
-      // You can add other logic here if needed for '#' links,
-      // e.g., only expand the menu without navigating
-      setIsExpanded(!isExpanded); // Example: toggle menu if it's a '#' link
-    } else if (linkHref) { // Only if linkHref is not '#' and exists
+      e.preventDefault();
+      setIsExpanded(!isExpanded);
+    } else if (linkHref) {
       if (linkHref.startsWith('/saving-loan?tab=')) {
         const url = new URL(linkHref, window.location.origin);
         const tabParam = url.searchParams.get('tab');
@@ -104,16 +103,13 @@ const MobileMenuItem: React.FC<MobileMenuItemProps> = ({ item, level, onCloseNav
   return (
     <div>
       <div className={`flex items-center justify-between py-2 rounded-md font-medium text-white hover:text-gray-200 hover:bg-gray-800/10 transition-colors duration-200`}
-           style={{ paddingLeft: `${16 + level * 10}px` }}>
+        style={{ paddingLeft: `${16 + level * 10}px` }}>
         {linkHref ? (
-          // Link will always be rendered if linkHref exists,
-          // but handleLinkClick will prevent navigation if linkHref === '#'
           <Link href={linkHref} className="flex items-center space-x-2 flex-grow" onClick={handleLinkClick}>
             {'icon' in item && item.icon && <item.icon className="h-5 w-5" />}
             <span>{item.label}</span>
           </Link>
         ) : (
-          // If linkHref is undefined, render as a non-clickable div
           <div className="flex items-center space-x-2 flex-grow">
             {'icon' in item && item.icon && <item.icon className="h-5 w-5" />}
             <span>{item.label}</span>
@@ -146,7 +142,6 @@ const MobileMenuItem: React.FC<MobileMenuItemProps> = ({ item, level, onCloseNav
   );
 };
 
-
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -158,9 +153,28 @@ const Navbar = () => {
   const subMenuLeaveTimeout = useRef<NodeJS.Timeout | null>(null);
   const subSubMenuLeaveTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  const dispatch = useAppDispatch();
+  const userMail = useAppSelector((state) => state.userReducer.email);
+
+  useEffect(() => {
+    const keepLogin = async () => {
+      const tkn = localStorage.getItem("tkn");
+      if (!tkn) return;
+
+      try {
+        const res = await apiCall.get(`/accounts/${tkn}`);
+        dispatch(setSignIn(res.data));
+      } catch (err) {
+        console.error("Keep login failed:", err);
+        dispatch(setSignOut());
+        localStorage.removeItem("tkn");
+      }
+    };
+    keepLogin();
+  }, [dispatch]);
+
   const pathname = usePathname();
   const router = useRouter();
-  // useSearchParams() is used here, hence the need for Suspense in the parent
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -175,7 +189,7 @@ const Navbar = () => {
   const navLinks: NavLink[] = [
     { href: '/', label: 'Home', icon: Home },
     {
-      href: '/about/mission-statement', // This stays if /about/mission-statement still exists
+      href: '/about/mission-statement',
       label: 'About us',
       icon: Users,
       subLinks: [
@@ -185,7 +199,6 @@ const Navbar = () => {
       ],
     },
     {
-      // Parent link for Services, now points to /saving-loan path
       href: '/saving-loan?tab=saving-product',
       label: 'Services',
       icon: CreditCard,
@@ -206,24 +219,22 @@ const Navbar = () => {
             { href: '/saving-loan?tab=financing-product', label: 'Working Capital Credit' },
             { href: '/saving-loan?tab=financing-product', label: 'Consumer Credit' },
             { href: '/saving-loan?tab=financing-product', label: 'Investment credit' },
-            // If Loan Application Form is now at /saving-loan/loans/, adjust this:
             { href: '/saving-loan/loans/loan-application-form', label: 'Loan Application Form' },
           ],
         },
       ],
     },
     {
-      href: '/publication?section=report', // Example: main publication page
+      href: '/publication?section=report',
       label: 'Publication',
       icon: ClipboardList,
       subLinks: [
         {
-          href: '/publication?section=report', // Example: Report page
+          href: '/publication?section=report',
           label: 'Report',
           subSubLinks: [
             {
-              // If this is just a label without navigation, ensure href is absent or set to '#'
-              href: '/publication?section=financial-report', // Set to '#' as this is a parent for subSubSubLinks
+              href: '/publication?section=financial-report',
               label: 'Financial Report',
             },
             { href: '/publication?section=annual-report', label: 'Annual Report' },
@@ -233,7 +244,7 @@ const Navbar = () => {
         { href: '/publication?section=information', label: 'Information' },
       ],
     },
-    { href: '/Contact', label: 'Contact', icon: Calculator }, 
+    { href: '/Contact', label: 'Contact', icon: Calculator },
     { href: '/blog', label: 'Blog', icon: BookOpen },
   ];
 
@@ -285,21 +296,15 @@ const Navbar = () => {
     }, 200);
   };
 
-  // Helper function to check if a link is currently active based on pathname and query
   const isActiveLink = (href: string) => {
-    // For the root path ('/')
     if (href === '/') {
       return pathname === '/' && !searchParams.get('tab');
     }
-    // For the /saving-loan page with a specific tab
     if (href.startsWith('/saving-loan?tab=')) {
       const url = new URL(href, window.location.origin);
       const targetTab = url.searchParams.get('tab');
-      // Check if pathname matches AND the 'tab' query parameter matches
       return pathname === '/saving-loan' && searchParams.get('tab') === targetTab;
     }
-    // For other normal pages like /about, /blog, /contact etc.
-    // Also handles paths that start with the href (e.g., /publication/report/financial/neraca matches /publication/report)
     return pathname === href || pathname.startsWith(href + '/');
   };
 
@@ -318,8 +323,8 @@ const Navbar = () => {
                 <Image
                   src="/image/Logo-HD-new-19cm.png"
                   alt="Logo SDA"
-                  width={100} // Set a base width
-                  height={20} // Set a base height, will be scaled by CSS classes
+                  width={100}
+                  height={20}
                   className="w-[120px] h-[30px] md:w-[150px] md:h-[40px] lg:w-[150px] lg:h-[40px]"
                 />
               </div>
@@ -360,16 +365,13 @@ const Navbar = () => {
                         onMouseEnter={() => subLink.subSubLinks && handleSubMouseEnter(subLink.label)}
                         onMouseLeave={() => subLink.subSubLinks && handleSubMouseLeave()}
                       >
-                        
                         <Link
                           href={subLink.href || '#'}
                           className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600
                                       ${isActiveLink(subLink.href || '') ? 'font-semibold text-blue-600 bg-gray-50' : ''}`}
-
                           onClick={(e) => {
                             if (subLink.href === '#') {
                               e.preventDefault();
-                              
                             }
                           }}
                         >
@@ -384,7 +386,7 @@ const Navbar = () => {
                                           transition-all duration-300 ease-out
                                           ${activeSubMenu === subLink.label ? 'opacity-100 translate-x-0 visible' : 'opacity-0 translate-x-2 invisible'}
                                           z-50`}
-                            >
+                          >
                             {subLink.subSubLinks.map((subSubLink) => (
                               <div
                                 key={subSubLink.label}
@@ -392,7 +394,6 @@ const Navbar = () => {
                                 onMouseEnter={() => subSubLink.subSubSubLinks && handleSubSubMouseEnter(subSubLink.label)}
                                 onMouseLeave={() => subSubLink.subSubSubLinks && handleSubSubMouseLeave()}
                               >
-                                {/* Ensure href always exists for the Link component, default to '#' if not provided */}
                                 <Link
                                   href={subSubLink.href || '#'}
                                   className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600
@@ -414,7 +415,7 @@ const Navbar = () => {
                                                   transition-all duration-300 ease-out
                                                   ${activeSubSubMenu === subSubLink.label ? 'opacity-100 translate-x-0 visible' : 'opacity-0 translate-x-2 invisible'}
                                                   z-50`}
-                                    >
+                                  >
                                     {subSubLink.subSubSubLinks.map((thirdLevelLink) => (
                                       <Link
                                         key={thirdLevelLink.label}
@@ -439,35 +440,58 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Desktop Login/Sign Up Buttons */}
           <div className="hidden lg:flex items-center md:space-x-2 lg:space-x-3">
-            <Link href="/login" className={`flex items-center space-x-1 md:px-3 md:py-1 lg:px-4 lg:py-2 rounded-lg transition-all duration-300 hover:bg-gray-100
-              ${scrolled ? 'text-gray-800 hover:text-blue-600' : 'text-white hover:text-blue-700'}
-              ${isActiveLink('/login') ? 'font-bold text-blue-600' : ''}`}
-            >
-              <LogIn className="md:h-3 md:w-3 lg:h-4 lg:w-4" />
-              <span className="md:text-xs lg:text-sm font-medium">Log In</span>
-            </Link>
-            <Link href="/signup" className={`flex items-center space-x-1 md:px-3 md:py-1 lg:px-4 lg:py-2 rounded-lg transition-all duration-300
-              ${scrolled ? 'bg-gray-200 hover:bg-gray-300 text-gray-700 hover:text-blue-700' : 'bg-white/20 hover:bg-white/30 text-white hover:text-blue-700'}
-              ${isActiveLink('/signup') ? 'font-bold' : ''}`}
-            >
-              <User className="md:h-3 md:w-3 lg:h-4 lg:w-4" />
-              <span className="md:text-xs lg:text-sm font-medium">Sign Up</span>
-            </Link>
+            {userMail ? (
+              <button
+                type="button"
+                onClick={() => {
+                  dispatch(setSignOut());
+                  localStorage.removeItem("tkn");
+                  toast.success("You have been signed out."); 
+                }}
+                className={`flex items-center space-x-1 md:px-3 md:py-1 lg:px-4 lg:py-2 rounded-lg transition-all duration-300 hover:bg-gray-100
+                  ${scrolled ? 'text-gray-800 hover:text-blue-600' : 'text-white hover:text-blue-700'}
+                  ${isActiveLink('/sign-in') ? 'font-bold text-blue-600' : ''}`}
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/sign-in"
+                className={`flex items-center space-x-1 md:px-3 md:py-1 lg:px-4 lg:py-2 rounded-lg transition-all duration-300 hover:bg-gray-100
+                  ${scrolled ? 'text-gray-800 hover:text-blue-600' : 'text-white hover:text-blue-700'}
+                  ${isActiveLink('/sign-in') ? 'font-bold text-blue-600' : ''}`}
+              >
+                <LogIn className="md:h-3 md:w-3 lg:h-4 lg:w-4" />
+                <span className="md:text-xs lg:text-sm font-medium">Log In</span>
+              </Link>
+            )}
           </div>
 
-          {/* Mobile Login/Sign Up Buttons & Hamburger Menu Button */}
+          {/* Mobile Login / Sign Out + Hamburger */}
           <div className="lg:hidden flex items-center space-x-2">
-            <Link href="/login" className="flex items-center space-x-1 px-2 py-1 rounded-lg text-gray-800 hover:text-blue-600 hover:bg-gray-100 text-xs">
-              <LogIn className="h-4 w-4" />
-              <span>Login</span>
-            </Link>
-            <Link href="/signup" className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs">
-              <User className="h-4 w-4" />
-              <span>Sign Up</span>
-            </Link>
+            {userMail ? (
 
+              <button
+                type="button"
+                onClick={() => {
+                  dispatch(setSignOut());
+                  localStorage.removeItem("tkn");
+                  toast.success("You have been signed out."); 
+                }}
+                className="flex items-center space-x-1 px-2 py-1 rounded-lg text-gray-800 hover:text-blue-600 hover:bg-gray-100 text-xs"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="flex items-center space-x-1 px-2 py-1 rounded-lg text-gray-800 hover:text-blue-600 hover:bg-gray-100 text-xs"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Login</span>
+              </Link>
+            )}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-md text-gray-800 hover:bg-gray-100"
@@ -476,22 +500,22 @@ const Navbar = () => {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu Overlay */}
-      <div className={`lg:hidden transition-all duration-300 ${isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-        } overflow-y-auto bg-blue-900/95 backdrop-blur-md`}>
-        <div className="px-4 pt-2 pb-3 space-y-1">
-          {navLinks.map((link) => (
-            <MobileMenuItem
-              key={link.label}
-              item={link}
-              level={0}
-              onCloseNav={() => setIsOpen(false)}
-              router={router}
-              searchParams={searchParams}
-            />
-          ))}
+        {/* Mobile Menu Overlay */}
+        <div className={`lg:hidden transition-all duration-300 ${isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          } overflow-y-auto bg-blue-900/95 backdrop-blur-md`}>
+          <div className="px-4 pt-2 pb-3 space-y-1">
+            {navLinks.map((link) => (
+              <MobileMenuItem
+                key={link.label}
+                item={link}
+                level={0}
+                onCloseNav={() => setIsOpen(false)}
+                router={router}
+                searchParams={searchParams}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </nav>

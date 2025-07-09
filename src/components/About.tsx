@@ -8,22 +8,20 @@ export default function About() {
 
   useEffect(() => {
     const handleResize = () => {
-      // Menentukan apakah lebar jendela kurang dari 768px (breakpoint 'md' di Tailwind CSS)
+
       setIsMobile(window.innerWidth < 768);
     };
 
-    // Tambahkan event listener untuk mendengarkan perubahan ukuran jendela
     window.addEventListener('resize', handleResize);
     
-    // Panggil handleResize satu kali saat komponen di-mount
-    // untuk mengatur state 'isMobile' sesuai ukuran jendela saat inisialisasi
+
     handleResize();
 
-    // Fungsi cleanup: Hapus event listener saat komponen di-unmount
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []); // Array dependensi kosong memastikan useEffect ini hanya berjalan sekali saat mount dan unmount
+  }, []); 
 
   const fadeInVariants: Variants = {
     hidden: { opacity: 0, y: 20, transition: { duration: 0.0 } },
@@ -114,7 +112,7 @@ export default function About() {
             animate="visible"
             variants={slideInLeftVariants}
             transition={{ delay: 0.4 }}
-            href="#"
+            href="/team"
             className="flex items-center justify-center
                         w-full sm:w-auto
                         px-6 py-3

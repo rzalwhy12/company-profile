@@ -1,12 +1,10 @@
 // src/components/PublicationContentWrapper.tsx
 'use client';
 
-
-import React, { useState, useEffect, useRef } from 'react'; 
-import { useSearchParams, useRouter } from 'next/navigation'; 
-import { Button } from '@/components/ui/button'; 
-import { CSSTransition, TransitionGroup } from 'react-transition-group'; 
-
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence, Variants } from 'framer-motion'; // Menggunakan Framer Motion
 
 import PublicationDocumentCard from './PublicationDocumentCard';
 
@@ -20,7 +18,6 @@ import {
 
 
 const publicationContent: Record<PublicationSection, PublicationContentItem> = {
-    // ... data publicationContent Anda ...
     'financial-report': {
         title: 'Financial Report',
         content: (
@@ -79,7 +76,7 @@ const publicationContent: Record<PublicationSection, PublicationContentItem> = {
             </div>
         ),
     },
-    'report': { 
+    'report': {
         title: 'Reports Overview',
         content: (
             <div className="space-y-4">
@@ -90,11 +87,19 @@ const publicationContent: Record<PublicationSection, PublicationContentItem> = {
     },
 };
 
+// Definisikan variants untuk animasi konten utama
+const contentVariants: Variants = {
+    hidden: { opacity: 0, y: 40, scale: 0.98 }, // State awal saat memasuki
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } }, // State akhir saat memasuki
+    exit: { opacity: 0, y: -20, scale: 0.98, transition: { duration: 0.3, ease: 'easeIn' } }, // State saat keluar
+};
+
 const PublicationContent: React.FC = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const nodeRef = useRef(null);
-    const submenuRef = useRef(null);
+    // nodeRef tidak diperlukan lagi untuk konten utama karena Framer Motion menanganinya
+    // submenuRef masih bisa digunakan jika Anda ingin referensi DOM, tapi tidak mutlak diperlukan untuk animasi FM
+    // const submenuRef = useRef<HTMLDivElement>(null);
 
     const [activeSection, setActiveSection] = useState<PublicationSection>('financial-report');
     const [isReportExpanded, setIsReportExpanded] = useState(false);
@@ -103,10 +108,14 @@ const PublicationContent: React.FC = () => {
         const section = searchParams.get('section') as PublicationSection;
         if (section && publicationContent[section]) {
             setActiveSection(section);
+            // Otomatis membuka submenu jika section adalah 'financial-report' atau 'annual-report'
             if (section === 'financial-report' || section === 'annual-report') {
                 setIsReportExpanded(true);
+            } else {
+                setIsReportExpanded(false); // Tutup submenu jika beralih ke bagian lain
             }
         } else {
+            // Redirect ke financial-report jika tidak ada section di URL saat awal dimuat
             if (typeof window !== 'undefined' && !searchParams.get('section')) {
                     router.replace('/publication?section=financial-report');
             }
@@ -116,12 +125,13 @@ const PublicationContent: React.FC = () => {
     const handleSectionClick = (section: PublicationSection) => {
         setActiveSection(section);
         router.push(`/publication?section=${section}`);
+        // Atur status expanded berdasarkan section yang diklik
         if (section === 'report') {
-            setIsReportExpanded(!isReportExpanded);
+            setIsReportExpanded(!isReportExpanded); // Toggle saat klik "Report"
         } else if (section === 'financial-report' || section === 'annual-report') {
-            setIsReportExpanded(true);
+            setIsReportExpanded(true); // Pastikan terbuka saat memilih sub-report
         } else {
-            setIsReportExpanded(false);
+            setIsReportExpanded(false); // Tutup saat memilih section non-report
         }
     };
 
@@ -136,7 +146,7 @@ const PublicationContent: React.FC = () => {
 
     return (
         <div className="flex flex-col lg:flex-row max-w-7xl mx-auto py-8 px-6 sm:px-10 gap-8">
-            {/* Breadcrumbs */}
+            {/* Breadcrumbs (for mobile, hidden on larger screens) */}
             <div className="bg-white py-4 px-6 sm:px-10 border-b border-gray-200 w-full lg:hidden">
                 <nav className="text-sm text-gray-500">
                     {breadcrumbs.map((crumb, index) => (
@@ -179,35 +189,41 @@ const PublicationContent: React.FC = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                             </svg>
                         </Button>
-                        {/* Pastikan menggunakan ref yang berbeda untuk submenu */}
-                        <CSSTransition
-                            in={isReportExpanded}
-                            timeout={200}
-                            classNames="submenu-transition"
-                            unmountOnExit
-                            nodeRef={submenuRef}
+                        {/* Menggunakan motion.div untuk animasi submenu */}
+                        <motion.div
+                            initial={false} // Penting untuk mengontrol animasi secara manual dengan `animate`
+                            animate={{
+                                height: isReportExpanded ? 'auto' : 0, // Animasikan tinggi
+                                opacity: isReportExpanded ? 1 : 0,    // Animasikan opacity
+                                // Jangan pakai overflow-hidden di sini, pindahkan ke animate
+                                // atau pastikan parent tidak memotong overflow secara agresif saat max-height auto
+                                display: isReportExpanded ? 'block' : 'none', // Sembunyikan saat tidak expanded
+                            }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            // Tambahkan kelas untuk menjaga padding/margin
+                            className="pl-4 mt-1 space-y-1"
+                            // Hapus ref jika tidak ada CSSTransition lagi
+                            // ref={submenuRef}
                         >
-                            <div ref={submenuRef} className="pl-4 mt-1 space-y-1 overflow-hidden">
-                                <Button
-                                    variant="ghost"
-                                    className={`w-full justify-start text-left text-sm px-3 py-2 rounded-md transition-colors duration-200 ${
-                                        activeSection === 'financial-report' ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
-                                    }`}
-                                    onClick={() => handleSectionClick('financial-report')}
-                                >
-                                    Financial Report
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    className={`w-full justify-start text-left text-sm px-3 py-2 rounded-md transition-colors duration-200 ${
-                                        activeSection === 'annual-report' ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
-                                    }`}
-                                    onClick={() => handleSectionClick('annual-report')}
-                                >
-                                    Annual Report
-                                </Button>
-                            </div>
-                        </CSSTransition>
+                            <Button
+                                variant="ghost"
+                                className={`w-full justify-start text-left text-sm px-3 py-2 rounded-md transition-colors duration-200 ${
+                                    activeSection === 'financial-report' ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                                }`}
+                                onClick={() => handleSectionClick('financial-report')}
+                            >
+                                Financial Report
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className={`w-full justify-start text-left text-sm px-3 py-2 rounded-md transition-colors duration-200 ${
+                                    activeSection === 'annual-report' ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                                }`}
+                                onClick={() => handleSectionClick('annual-report')}
+                            >
+                                Annual Report
+                            </Button>
+                        </motion.div>
                     </div>
 
                     {/* Other Sections */}
@@ -234,41 +250,42 @@ const PublicationContent: React.FC = () => {
 
             {/* Right Section: Main Content */}
             <main className="flex-1 bg-white rounded-lg shadow-md p-6 lg:p-8 min-h-[60vh]">
-                <TransitionGroup component={null}>
-                    <CSSTransition
-                        key={activeSection}
-                        timeout={300}
-                        classNames="fade-and-slide"
-                        nodeRef={nodeRef}
+                <AnimatePresence mode="wait"> {/* mode="wait" untuk exit-first behavior */}
+                    {/* motion.div akan di-mount/unmount oleh AnimatePresence berdasarkan 'key' */}
+                    <motion.div
+                        key={activeSection} // Kunci unik untuk setiap konten agar AnimatePresence bisa melacaknya
+                        variants={contentVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="w-full" // Penting agar div ini mengambil lebar penuh jika diperlukan
                     >
-                        <div ref={nodeRef}>
-                            <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
-                                {publicationContent[activeSection]?.title || 'Select a Publication'}
-                            </h1>
+                        <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
+                            {publicationContent[activeSection]?.title || 'Select a Publication'}
+                        </h1>
 
-                            {publicationContent[activeSection]?.documents ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <TransitionGroup component={null}>
-                                        {publicationContent[activeSection].documents?.map((doc: Document, docIndex: number) => (
-                                            <PublicationDocumentCard
-                                                key={docIndex}
-                                                doc={doc}
-                                                delay={docIndex * 50}
-                                            />
-                                        ))}
-                                    </TransitionGroup>
-                                </div>
-                            ) : (
-                                <div className="prose prose-lg text-gray-700">
-                                    {publicationContent[activeSection]?.content}
-                                </div>
-                            )}
-                        </div>
-                    </CSSTransition>
-                </TransitionGroup>
+                        {/* Conditional rendering untuk documents vs. content */}
+                        {publicationContent[activeSection]?.documents ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Dokumen */}
+                                {publicationContent[activeSection].documents?.map((doc: Document, docIndex: number) => (
+                                    <PublicationDocumentCard
+                                        key={docIndex}
+                                        doc={doc}
+                                        delay={docIndex * 100}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="prose prose-lg text-gray-700">
+                                {publicationContent[activeSection]?.content}
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </main>
         </div>
     );
 };
 
-export default PublicationContent; 
+export default PublicationContent;

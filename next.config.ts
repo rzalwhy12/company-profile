@@ -1,9 +1,9 @@
-// next.config.ts
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  // Hapus 'swcMinify: true,' (jika ada)
-  // Hapus seluruh bagian 'experimental: { esmExternals: 'loose' },' (jika ada)
+  output: 'standalone',
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  images: { unoptimized: true },
 };
 
 module.exports = nextConfig;

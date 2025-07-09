@@ -15,13 +15,12 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement;
 };
 
-// Hapus deklarasi actionTypes sebagai variabel:
-// const actionTypes = {
-//   ADD_TOAST: 'ADD_TOAST',
-//   UPDATE_TOAST: 'UPDATE_TOAST',
-//   DISMISS_TOAST: 'DISMISS_TOAST',
-//   REMOVE_TOAST: 'REMOVE_TOAST',
-// } as const;
+const actionTypes = {
+  ADD_TOAST: 'ADD_TOAST',
+  UPDATE_TOAST: 'UPDATE_TOAST',
+  DISMISS_TOAST: 'DISMISS_TOAST',
+  REMOVE_TOAST: 'REMOVE_TOAST',
+} as const;
 
 let count = 0;
 
@@ -30,14 +29,7 @@ function genId() {
   return count.toString();
 }
 
-// Langsung definisikan ActionType sebagai tipe literal union:
-type ActionType = {
-  ADD_TOAST: 'ADD_TOAST';
-  UPDATE_TOAST: 'UPDATE_TOAST';
-  DISMISS_TOAST: 'DISMISS_TOAST';
-  REMOVE_TOAST: 'REMOVE_TOAST';
-};
-
+type ActionType = typeof actionTypes;
 
 type Action =
   | {
@@ -163,7 +155,7 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
-      onOpenChange: (open: boolean) => { // <-- FIX: Add type annotation here
+      onOpenChange: (open) => {
         if (!open) dismiss();
       },
     },

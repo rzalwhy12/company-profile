@@ -66,7 +66,7 @@ export default function Services() {
               Apply for a Loan <br /> Fast & Easy
             </h2>
             <a
-              href="#"
+              href="/saving-loan?tab=financing-product"
               className="mt-4 text-lg text-orange-600 font-semibold inline-flex items-center gap-2 hover:text-orange-800 transition-colors"
             >
               Look here
@@ -102,7 +102,7 @@ export default function Services() {
               Open Savings <br /> Safe & Profitable
             </h2>
             <a
-              href="#"
+              href="/saving-loan?tab=saving-product"
               className="mt-4 text-lg text-blue-900 font-semibold inline-flex items-center gap-2 hover:text-blue-800 transition-colors"
             >
               Look here

@@ -4,6 +4,10 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Suspense } from 'react';
+import StoreProvider from "./StoreProvider";
+import { ToastContainer, toast } from 'react-toastify';
+
+
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -13,24 +17,25 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  
+
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <html lang="id">
-      
-      <body className={inter.className}>
-        <Suspense fallback={<div>Loading navigation...</div>}>
-        <Navbar />
-        </Suspense>
-        <main className="min-h-screen pb-[72px]">
-          {children}
-        </main>
-        <Footer />
-      </body>
-      
+<StoreProvider>
+        <body className={inter.className}>
+          <Suspense fallback={<div>Loading navigation...</div>}>
+            <ToastContainer />
+            <Navbar />
+          </Suspense>
+          <main className="min-h-screen pb-[72px]">
+            {children}
+          </main>
+          <Footer />
+        </body>
+</StoreProvider>
     </html>
   );
 }

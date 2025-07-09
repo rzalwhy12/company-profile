@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link'; // Import Link component for client-side navigation
 import {
   Phone, Mail, MapPin,
   Facebook, Twitter, Instagram, Linkedin,
@@ -10,15 +11,29 @@ import {
 const Footer = () => {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
+  // --- UPDATED: Footer links to match assumed navbar structure with correct paths ---
   const footerLinks = {
-    'Products & Services': [
-      'Savings', 'Deposits', 'Loans', 'Credit Cards', 'Investments', 'Insurance'
+    'Produk & Layanan': [
+      { name: 'Tabungan', href: '/saving-loan?tab=saving-product' },
+      { name: 'Deposito', href: '/saving-loan?tab=saving-product' },
+      { name: 'Pinjaman', href: '/saving-loan?tab=financing-product' },
+      { name: 'Investasi', href: '/saving-loan?tab=saving-product' },
+      { name: 'Asuransi', href: '/saving-loan?tab=financing-product' }
     ],
-    'Help': [
-      'Help Center', 'FAQ', 'Contact Us', 'Report a Error', 'Terms & Conditions', 'Privacy Policy'
+    'Bantuan': [
+      { name: 'Pusat Bantuan', href: '/about/customer-complaints' },
+      { name: 'FAQ', href: '/about/customer-complaints' },
+      { name: 'Hubungi Kami', href: '/about/customer-complaints' },
+      { name: 'Laporkan Error', href: '/about/customer-complaints' },
+      { name: 'Syarat & Ketentuan', href: '/about/customer-complaints' },
+      { name: 'Kebijakan Privasi', href: '/about/customer-complaints' }
     ],
-    'About Us': [
-      'Company Profile', 'Vision & Mission', 'Management', 'Career', 'News', 'Investor Relations'
+    'Tentang Kami': [
+      { name: 'Profil Perusahaan', href: '/about/mission-statement' },
+      { name: 'Visi & Misi', href: '/about/mission-statement' },
+      { name: 'Lokasi cabang', href: '/about/office-locations' },
+      { name: 'Karir', href: '/about/careers' },
+      { name: 'Berita', href: '/blog' },
     ]
   };
 
@@ -64,11 +79,11 @@ const Footer = () => {
               <div key={title}>
                 <h3 className="text-lg font-semibold mb-4">{title}</h3>
                 <ul className="space-y-2">
-                  {links.map((link) => (
-                    <li key={link}>
-                      <a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">
-                        {link}
-                      </a>
+                  {links.map((linkItem) => ( // Changed 'link' to 'linkItem' to avoid conflict with Link component
+                    <li key={linkItem.name}>
+                      <Link href={linkItem.href} className="text-gray-300 hover:text-white transition-colors duration-200">
+                        {linkItem.name}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -88,9 +103,11 @@ const Footer = () => {
                   <ChevronDown className={`w-4 h-4 transition ${openSection === title ? 'rotate-180' : ''}`} />
                 </button>
                 <ul className={`pl-4 mt-2 space-y-1 text-sm transition-all duration-300 ease-in-out ${openSection === title ? 'max-h-40' : 'max-h-0 overflow-hidden'}`}>
-                  {links.map((link) => (
-                    <li key={link}>
-                      <a href="#" className="text-gray-400 hover:text-blue-400 transition">{link}</a>
+                  {links.map((linkItem) => ( // Changed 'link' to 'linkItem'
+                    <li key={linkItem.name}>
+                      <Link href={linkItem.href} className="text-gray-400 hover:text-blue-400 transition">
+                        {linkItem.name}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -123,28 +140,28 @@ const Footer = () => {
 
       {/* Sticky Footer (Mobile Shortcut) */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#0B1F3A] text-white flex justify-between md:hidden z-50 shadow-inner border-t border-white/10">
-  <a
-    href="tel:082142991064"
-    className="flex-1 flex flex-col items-center justify-center py-2 text-xs hover:bg-blue-700/20 transition border-r border-white/10"
-  >
-    <Phone className="w-5 h-5 mb-1" />
-    Call
-  </a>
-  <a
-    href="mailto:rzalcorp05@gmail.com"
-    className="flex-1 flex flex-col items-center justify-center py-2 text-xs hover:bg-blue-700/20 transition border-r border-white/10"
-  >
-    <Mail className="w-5 h-5 mb-1" />
-    Email
-  </a>
-  <a
-    href="https://wa.me/6282142991064"
-    className="flex-1 flex flex-col items-center justify-center py-2 text-xs hover:bg-blue-700/20 transition"
-  >
-    <MessageCircle className="w-5 h-5 mb-1" />
-    Chat
-  </a>
-</div>
+        <a
+          href="tel:082142991064"
+          className="flex-1 flex flex-col items-center justify-center py-2 text-xs hover:bg-blue-700/20 transition border-r border-white/10"
+        >
+          <Phone className="w-5 h-5 mb-1" />
+          Call
+        </a>
+        <a
+          href="mailto:rzalcorp05@gmail.com"
+          className="flex-1 flex flex-col items-center justify-center py-2 text-xs hover:bg-blue-700/20 transition border-r border-white/10"
+        >
+          <Mail className="w-5 h-5 mb-1" />
+          Email
+        </a>
+        <a
+          href="https://wa.me/6282142991064"
+          className="flex-1 flex flex-col items-center justify-center py-2 text-xs hover:bg-blue-700/20 transition"
+        >
+          <MessageCircle className="w-5 h-5 mb-1" />
+          Chat
+        </a>
+      </div>
     </footer>
   );
 };

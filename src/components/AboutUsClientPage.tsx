@@ -1,3 +1,4 @@
+// src/components/AboutUsClientPage.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,9 +7,17 @@ import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import DropdownMenu from '@/components/DropdownMenu';
-import BranchLocatorLeaflet from '@/components/BranchLocator';
+// import BranchLocatorLeaflet from '@/components/BranchLocator'; // <--- HAPUS ATAU KOMENTARI INI
 import CompanyProfilePage from '@/components/Company-profile';
 import CustomerComplaintForm from '@/components/CustomerComplaintForm';
+import dynamic from 'next/dynamic'; // <--- IMPORT dynamic dari next/dynamic
+
+// Dynamic import for BranchLocatorLeaflet
+const DynamicBranchLocatorLeaflet = dynamic(() => import('@/components/BranchLocator'), {
+    ssr: false, // <-- INI KUNCI UTAMANYA! Jangan render di server
+    loading: () => <p>Loading map location...</p>, // Opsional: Tampilkan indikator loading
+});
+
 
 interface AboutNavItem {
     id: string;
@@ -20,10 +29,10 @@ interface AboutNavItem {
 const aboutUsContent: AboutNavItem[] = [
     {
         id: 'mission-statement',
-        label: 'Mission Statement ,Values & Company Motto',
-        title: 'Mission Statement ,Values & Company Motto',
-        content: 
-        <div className="w-full flex justify-center py-4"> {/* Menambahkan div wrapper untuk center dan padding */}
+        label: 'Mission Statement, Values & Company Motto',
+        title: 'Mission Statement, Values & Company Motto',
+        content:
+            <div className="w-full flex justify-center py-4">
                 <CompanyProfilePage />
             </div>
     },
@@ -32,7 +41,7 @@ const aboutUsContent: AboutNavItem[] = [
         label: 'Customer Complaints',
         title: 'Customer Complaints',
         content: (
-            <div className="w-full flex justify-center py-4"> {/* Menambahkan div wrapper untuk center dan padding */}
+            <div className="w-full flex justify-center py-4">
                 <CustomerComplaintForm />
             </div>
         ),
@@ -42,24 +51,38 @@ const aboutUsContent: AboutNavItem[] = [
         label: 'Office Branch Locations',
         title: 'Office Branch Locations',
         content: (
-            <div className="w-full flex justify-center py-4"> {/* Menambahkan div wrapper untuk center dan padding */}
-                <BranchLocatorLeaflet />
+            <div className="w-full flex justify-center py-4">
+                {/* Gunakan komponen yang diimpor secara dinamis di sini */}
+                <DynamicBranchLocatorLeaflet />
             </div>
         ),
     },
 ];
 
-const AboutUs: React.FC = () => {
-    const params = useParams();
+
+const contentVariants: Variants = {
+    hidden: { opacity: 0, y: 40, scale: 0.98 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } },
+    exit: { opacity: 0, y: -20, scale: 0.98, transition: { duration: 0.3, ease: 'easeIn' } },
+};
+
+
+interface AboutUsClientPageProps {
+    initialId: string;
+}
+
+const AboutUsClientPage: React.FC<AboutUsClientPageProps> = ({ initialId }) => {
     const router = useRouter();
+    const [activeContentId, setActiveContentId] = useState<string>(initialId || 'mission-statement');
+
+    const params = useParams();
     const currentIdFromUrl = params.id as string;
-    const [activeContentId, setActiveContentId] = useState<string>(currentIdFromUrl || 'mission-statement');
 
     useEffect(() => {
         if (currentIdFromUrl && currentIdFromUrl !== activeContentId) {
             setActiveContentId(currentIdFromUrl);
         }
-    }, [currentIdFromUrl]);
+    }, [currentIdFromUrl, activeContentId]);
 
     const handleDropdownChange = (id: string) => {
         setActiveContentId(id);
@@ -68,11 +91,6 @@ const AboutUs: React.FC = () => {
 
     const currentContent = aboutUsContent.find(item => item.id === activeContentId);
 
-    const contentVariants: Variants = {
-        hidden: { opacity: 0, y: 40, scale: 0.98 },
-        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } },
-        exit: { opacity: 0, y: -20, scale: 0.98, transition: { duration: 0.3, ease: 'easeIn' } },
-    };
 
     return (
         <div className="bg-gradient-to-br from-gray-100 via-white to-gray-50 min-h-screen font-sans">
@@ -154,4 +172,4 @@ const AboutUs: React.FC = () => {
     );
 };
 
-export default AboutUs;
+export default AboutUsClientPage;

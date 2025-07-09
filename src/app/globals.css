@@ -178,56 +178,120 @@ body {
     animation: wobble 0.6s ease-in-out;
 }
 
-/* CSS untuk CSSTransition - Dropdown Submenu */
-.submenu-transition-enter {
-    opacity: 0;
-    height: 0;
-}
-.submenu-transition-enter-active {
-    opacity: 1;
-    height: auto;
-    transition: opacity 200ms ease-out, height 200ms ease-out;
-}
-.submenu-transition-exit {
-    opacity: 1;
-    height: auto;
-}
-.submenu-transition-exit-active {
-    opacity: 0;
-    height: 0;
-    transition: opacity 200ms ease-out, height 200ms ease-out;
+
+/* Base styles */
+* {
+  border-color: var(--border); /* Asumsi --border didefinisikan di tempat lain, misal di :root */
 }
 
-/* CSS untuk CSSTransition - Transisi Konten Utama (fade-and-slide) */
+body {
+  background-color: var(--background); /* Asumsi --background didefinisikan di tempat lain */
+  color: var(--foreground); /* Asumsi --foreground didefinisikan di tempat lain */
+}
+
+/* Component styles */
+.card-hover {
+  transition-property: all;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* ease-in-out */
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); /* default shadow */
+}
+
+.card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1), 0 0 0 3px rgb(59 130 246 / 0.1); /* shadow-lg dan custom shadow-blue-500/10 */
+  transform: translateY(-4px); /* -translate-y-1 (jika 1 unit = 4px) */
+}
+
+.gradient-banking {
+  background-image: linear-gradient(to bottom right, #172b4d, #1f3a68, #172b4d); /* from-blue-900 via-blue-800 to-blue-900 */
+}
+
+.text-gradient {
+  background-image: linear-gradient(to right, #2563eb, #fbbf24); /* from-blue-600 to-amber-500 */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.6s ease-out;
+  -webkit-animation: slideIn 0.6s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .fade-and-slide-enter {
-    opacity: 0;
-    transform: translateY(20px);
+  opacity: 0.01;
+  transform: translateY(20px);
 }
+
 .fade-and-slide-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
 }
+
 .fade-and-slide-exit {
-    opacity: 1;
-    transform: translateY(0);
-    position: absolute; /* Penting untuk exit animation agar tidak memengaruhi layout */
-    width: calc(100% - 48px); /* Sesuaikan dengan padding main, misal p-6 = 24px kiri + 24px kanan */
+  opacity: 1;
+  transform: translateY(0);
 }
+
 .fade-and-slide-exit-active {
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  opacity: 0.01;
+  transform: translateY(-10px);
+  /*Slightlymoveuponexit*/transition: opacity 0ms ease-in, transform 300ms ease-in;
+  -webkit-transition: opacity 300ms ease-in, transform 300ms ease-in;
+  -moz-transition: opacity 300ms ease-in, transform 300ms ease-in;
+  -ms-transition: opacity 300ms ease-in, transform 300ms ease-in;
+  -o-transition: opacity 300ms ease-in, transform 300ms ease-in;
 }
 
-/* CSS untuk CSSTransition - Item Dokumen (staggered) */
-.stagger-item-enter {
+/* --- Submenu Transition (if not already defined) --- */
+.submenu-transition-enter {
+    max-height: 0;
     opacity: 0;
-    transform: translateY(20px);
+    overflow: hidden;
 }
-.stagger-item-enter-active {
+
+.submenu-transition-enter-active {
+    max-height: 200px; /* Adjust based on expected max height */
     opacity: 1;
-    transform: translateY(0);
-    transition: opacity 300ms ease-out, transform 300ms ease-out;
+    transition: max-height 200ms ease-in-out, opacity 200ms ease-in-out;
 }
 
+.submenu-transition-exit {
+    max-height: 200px; /* Must match enter-active height */
+    opacity: 1;
+    overflow: hidden;
+}
+
+.submenu-transition-exit-active {
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 200ms ease-in-out, opacity 200ms ease-in-out;
+}
